@@ -7,11 +7,9 @@ const catController = require('./../controllers/cat')
 router 
     .route('/')
     .post(catController.createCat)
-    .get(catController.getCats_v2)
+    .get(catController.getCats)
     
-// router
-//     .route('/discount')
-//     .get(productController.getDiscountProducts)
+router.route('/all').get(catController.getAllCatProductsExist)
 // router
 //     .route('/:id')
 //     .get(productController.getProduct)

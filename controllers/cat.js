@@ -10,12 +10,12 @@ module.exports = {
             data: cat
         })
     }),
-    getCats: catchAsync(async (req,res) => {
+    getCats: catchAsync(async (req, res) => {
         const cats = await Cat.find();
         const products = await Products.find();
 
 
-      const result = cats.map(cat => {
+        const result = cats.map(cat => {
             // console.log(cat.name, cat.id);
             const catProducts = products.filter(p => p.cat_id.toString() === cat._id.toString())
             if(catProducts) {
@@ -32,20 +32,35 @@ module.exports = {
          result
         })
     }),
-    getCats_v2: catchAsync(async (req,res) => {
-        const cats = await Cat.find([
-            {
-                $lookup: {
-                    from: "products",
-                    localField: "_id",
-                    foreignField: "cat_id",
-                    as: "products"
-                }
-            }
-        ])
-        res.status(200).json({
-         status: 'succes',
-         cats
-        })
+    // ստանում ենք բոլոր կատեգորիաները որոնք ունեն կցված ապրանքներ
+    getAllCatProductsExist: catchAsync(async (req, res) => { 
+            const cats = await Cat.aggregate([{
+                    // Միացնում ենք այլ աղյուսակ բացայից
+                    $lookup: {
+                        from: 'products',
+                        let: { catId: '$_id' },
+                        pipeline: [{
+                                $match: {
+                                    // expression Համեմատում ենք 
+                                    $expr: { $eq: ['$$catId', { $toObjectId: '$cat_id' }] },
+                                },
+                                // $match: {
+                                //     $expr: {
+                                //         $and: [
+                                //             { $eq: ['$$catId', { $toObjectId: '$cat_id' }] },
+                                //             { $gt: [ 'productList.0', { $exists: true } ] },
+                                //         ]
+                                //     }
+                                // }
+                            },
+                            { $project: { name: 1, price: 1, currency: 1} }], as: 'productList'
+                    }},
+                    { $match: { 'productList.0': { $exists: true }} }
+            ]);
+
+        res.status(201).json({
+            status: ' success',
+            cats
+        });
     })
 }
