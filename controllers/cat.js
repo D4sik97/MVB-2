@@ -55,7 +55,7 @@ module.exports = {
                             },
                             { $project: { name: 1, price: 1, currency: 1} }], as: 'productList'
                     }},
-                    { $match: { 'productList.0': { $exists: true }} }
+                    { $match: { 'productList.0': {$exists: true }} }
             ]);
 
         res.status(201).json({
